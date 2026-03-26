@@ -1,0 +1,7 @@
+{
+  "name": ".GrocAI",
+  "description": "An intelligent grocery management app with AI-powered categorization and barcode lookup, featuring a sleek Vercel-inspired dark aesthetic.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
