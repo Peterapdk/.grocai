@@ -26,11 +26,11 @@ const Auth: React.FC = () => {
       <div className="absolute bottom-[-10%] left-[-10%] w-[400px] h-[400px] bg-blue-600/10 blur-[120px] rounded-full pointer-events-none" />
       
       <div className="w-full max-w-lg relative animate-fade-in">
-        <div className="glass rounded-[3rem] p-12 border border-white/5 shadow-2xl overflow-hidden relative">
+        <div className="glass rounded-[2rem] sm:rounded-[3rem] p-8 sm:p-12 border border-white/5 shadow-2xl overflow-hidden relative">
           {/* subtle line effect */}
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-purple-500/30 to-transparent" />
           
-          <div className="flex flex-col items-center text-center space-y-10">
+          <div className="flex flex-col items-center text-center space-y-8 sm:space-y-10">
             {/* Logo */}
             <div className="relative group">
               <div className="absolute inset-0 bg-purple-500/20 blur-3xl rounded-full group-hover:bg-purple-500/30 transition-all duration-500" />

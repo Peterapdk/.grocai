@@ -42,8 +42,13 @@ export default function ShoppingInsights({ activeList, allLists, onAddSuggestion
         if (result) {
           setInsights(result);
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error("Failed to load insights", error);
+        if (error?.message?.includes('Requested entity was not found') || error?.error?.message?.includes('Requested entity was not found')) {
+          // We can't setHasApiKey here directly, but we can trigger a re-check if App.tsx listens for it
+          // or just rely on the next user action to trigger it.
+          // For now, we'll just log it clearly.
+        }
       } finally {
         setLoading(false);
       }

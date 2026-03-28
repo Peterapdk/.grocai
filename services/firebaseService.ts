@@ -15,7 +15,8 @@ import {
   writeBatch, 
   Firestore,
   enableMultiTabIndexedDbPersistence,
-  getDocs
+  getDocs,
+  getDoc
 } from "firebase/firestore";
 
 const apiKey = process.env.API_KEY;
@@ -105,5 +106,6 @@ export {
   where, 
   orderBy, 
   writeBatch,
-  getDocs
+  getDocs,
+  getDoc
 };

@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { GroceryItem } from '../types';
 import { CATEGORY_STYLES } from '../constants';
 import { 
@@ -11,11 +12,10 @@ import {
   Plus,
   Minus,
   HelpCircle,
+  Loader2,
   Store,
   Star,
   Info,
-  ChevronDown,
-  ChevronRight,
   PackagePlus
 } from 'lucide-react';
 
@@ -127,28 +127,46 @@ const GroceryList: React.FC<GroceryListProps> = ({ items, onToggle, onDelete, on
                     key={item.id}
                     className={`group relative flex flex-col bg-[#121214]/60 hover:bg-[#18181b]/80 rounded-[1.5rem] border border-zinc-800/40 transition-all duration-300 ${item.completed ? 'opacity-40 grayscale-[0.8]' : ''} ${isEditing ? 'ring-2 ring-purple-500/50 bg-[#18181b] border-purple-500/20 shadow-[0_0_40px_-10px_rgba(168,85,247,0.15)]' : 'hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)] hover:-translate-y-0.5'}`}
                   >
-                    <div className="flex items-center gap-5 p-5">
-                      {!isEditing && (
-                        <button 
-                          onClick={() => onToggle(item.id)}
-                          className="shrink-0 group/check"
-                        >
-                          <div className={`w-7 h-7 rounded-full flex items-center justify-center transition-all duration-300 ${item.completed ? 'bg-purple-500 text-white scale-100' : 'bg-zinc-800/50 text-transparent border border-zinc-700/50 group-hover/check:border-purple-500/50 group-hover/check:bg-purple-500/10'}`}>
-                            {item.completed ? (
-                              <Check className="w-4 h-4" strokeWidth={3} />
-                            ) : (
-                              <div className="w-1.5 h-1.5 rounded-full bg-purple-500 opacity-0 group-hover/check:opacity-100 transition-opacity" />
-                            )}
-                          </div>
-                        </button>
-                      )}
-                      
-                      <div className="w-16 h-16 shrink-0 rounded-2xl bg-zinc-900/80 flex items-center justify-center overflow-hidden border border-zinc-800/50 shadow-inner group-hover:scale-105 transition-transform duration-500">
-                        {item.imageUrl ? (
-                          <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
-                        ) : (
-                          <span className="text-3xl filter drop-shadow-lg">{item.emoji}</span>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5 p-4 sm:p-5">
+                      <div className="flex items-center gap-4">
+                        {!isEditing && (
+                          <button 
+                            onClick={() => onToggle(item.id)}
+                            className="shrink-0 group/check"
+                          >
+                            <div className={`w-7 h-7 rounded-full flex items-center justify-center transition-all duration-300 ${item.completed ? 'bg-purple-500 text-white scale-100' : 'bg-zinc-800/50 text-transparent border border-zinc-700/50 group-hover/check:border-purple-500/50 group-hover/check:bg-purple-500/10'}`}>
+                              {item.completed ? (
+                                <Check className="w-4 h-4" strokeWidth={3} />
+                              ) : (
+                                <div className="w-1.5 h-1.5 rounded-full bg-purple-500 opacity-0 group-hover/check:opacity-100 transition-opacity" />
+                              )}
+                            </div>
+                          </button>
                         )}
+                        
+                        <div className="w-14 h-14 sm:w-16 sm:h-16 shrink-0 rounded-2xl bg-zinc-900/80 flex items-center justify-center overflow-hidden border border-zinc-800/50 shadow-inner group-hover:scale-105 transition-transform duration-500">
+                          {item.imageUrl ? (
+                            <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <span className="text-2xl sm:text-3xl filter drop-shadow-lg">{item.emoji}</span>
+                          )}
+                        </div>
+                        
+                        <div className="flex-1 min-w-0 sm:hidden">
+                          {/* Mobile title */}
+                          {!isEditing && (
+                            <div className="flex items-center gap-2 mb-1">
+                              <h4 className={`text-lg font-bold text-zinc-100 tracking-tight leading-snug truncate ${item.completed ? 'line-through text-zinc-600 decoration-purple-500/30' : ''}`}>
+                                {item.name}
+                              </h4>
+                              {item.brand && (
+                                <span className="shrink-0 px-2 py-0.5 rounded-md bg-zinc-800/50 border border-zinc-700/30 text-[9px] font-black text-zinc-500 uppercase tracking-widest">
+                                  {item.brand}
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </div>
                       </div>
                       
                       <div className="flex-1 min-w-0">
@@ -187,7 +205,7 @@ const GroceryList: React.FC<GroceryListProps> = ({ items, onToggle, onDelete, on
                           </div>
                         ) : (
                           <div className="flex flex-col">
-                            <div className="flex items-center gap-2 mb-1">
+                            <div className="hidden sm:flex items-center gap-2 mb-1">
                               <h4 className={`text-lg font-bold text-zinc-100 tracking-tight leading-snug truncate ${item.completed ? 'line-through text-zinc-600 decoration-purple-500/30' : ''}`}>
                                 {item.name}
                               </h4>
@@ -206,20 +224,65 @@ const GroceryList: React.FC<GroceryListProps> = ({ items, onToggle, onDelete, on
                               <div className="h-3 w-px bg-zinc-800/50" />
                               
                               {item.price !== undefined ? (
-                                <div className="flex items-center gap-2">
-                                  <span className="text-[10px] font-bold text-zinc-400 tabular-nums">
-                                    {formatCurrency(item.price)}
-                                  </span>
+                                <div className="flex items-center gap-2 relative">
+                                  <div className="flex flex-col items-end">
+                                    <span className="text-[10px] font-bold text-zinc-400 tabular-nums">
+                                      {formatCurrency(item.price)}
+                                    </span>
+                                    {item.priceSources && item.priceSources.length > 0 && (
+                                      <span className="text-[7px] font-black text-zinc-600 uppercase tracking-tighter -mt-0.5">
+                                        fra {item.priceSources.length} {item.priceSources.length === 1 ? 'butik' : 'butikker'}
+                                      </span>
+                                    )}
+                                  </div>
                                   {item.priceSources && item.priceSources.length > 0 && (
-                                    <button 
-                                      onClick={() => setShowSourcesId(isSourcesOpen ? null : item.id)}
-                                      className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md border transition-all ${isSourcesOpen ? 'bg-purple-500 text-white border-purple-400' : 'bg-zinc-800/80 border-zinc-700/50 text-zinc-500 hover:text-zinc-300'}`}
-                                    >
-                                      <Store className="w-2.5 h-2.5" />
-                                      <span className="text-[8px] font-bold uppercase tracking-tighter">Priskilder</span>
-                                      {isSourcesOpen ? <ChevronDown className="w-2 h-2 ml-0.5" /> : <ChevronRight className="w-2 h-2 ml-0.5" />}
-                                    </button>
+                                    <div className="relative">
+                                      <button 
+                                        onClick={() => setShowSourcesId(isSourcesOpen ? null : item.id)}
+                                        className={`p-1 rounded-full transition-all ${isSourcesOpen ? 'bg-purple-500 text-white' : 'text-zinc-500 hover:text-purple-400 hover:bg-purple-500/10'}`}
+                                        title="Se priskilder"
+                                      >
+                                        <Info className="w-3 h-3" />
+                                      </button>
+
+                                      <AnimatePresence>
+                                        {isSourcesOpen && (
+                                          <motion.div 
+                                            initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                                            exit={{ opacity: 0, scale: 0.9, y: 10 }}
+                                            className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-48 glass p-4 rounded-2xl border border-white/10 shadow-2xl z-[100]"
+                                          >
+                                            <div className="flex items-center justify-between mb-3">
+                                              <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Priskilder</p>
+                                              <Store className="w-2.5 h-2.5 text-purple-400" />
+                                            </div>
+                                            <div className="space-y-2">
+                                              {item.priceSources.map((source, idx) => (
+                                                <div key={idx} className="flex items-center justify-between">
+                                                  <span className="text-[10px] font-bold text-zinc-300">{source.store}</span>
+                                                  <span className="text-[10px] font-black text-zinc-100 tabular-nums">
+                                                    {formatCurrency(source.price)}
+                                                  </span>
+                                                </div>
+                                              ))}
+                                            </div>
+                                            <div className="mt-3 pt-2 border-t border-white/5">
+                                              <p className="text-[8px] text-zinc-500 italic leading-tight">
+                                                Indhentet via AI. Priser kan variere.
+                                              </p>
+                                            </div>
+                                            <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-[#18181b] border-r border-b border-white/10 rotate-45" />
+                                          </motion.div>
+                                        )}
+                                      </AnimatePresence>
+                                    </div>
                                   )}
+                                </div>
+                              ) : item.isEstimating ? (
+                                <div className="flex items-center gap-2 px-2 py-1 rounded-md bg-purple-500/5 border border-purple-500/10 animate-pulse">
+                                  <Loader2 className="w-3 h-3 text-purple-400 animate-spin" />
+                                  <span className="text-[9px] font-bold text-purple-400 uppercase tracking-widest">Søger efter pris...</span>
                                 </div>
                               ) : (
                                 <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-zinc-900/50 border border-dashed border-zinc-800">
@@ -233,10 +296,10 @@ const GroceryList: React.FC<GroceryListProps> = ({ items, onToggle, onDelete, on
                       </div>
 
                       {!isEditing && !item.completed && (
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 mt-3 sm:mt-0">
                           <button 
                             onClick={() => onToggleFavorite?.(item)}
-                            className={`flex items-center gap-2 px-3 py-2 rounded-xl border transition-all duration-300 group/fav ${item.isFavorite ? 'text-purple-400 bg-purple-500/10 border-purple-500/20' : 'text-zinc-600 bg-zinc-900/30 border-zinc-800/50 hover:text-purple-400 hover:border-purple-500/30 opacity-0 group-hover:opacity-100'}`}
+                            className={`flex items-center gap-2 px-3 py-2 rounded-xl border transition-all duration-300 group/fav ${item.isFavorite ? 'text-purple-400 bg-purple-500/10 border-purple-500/20' : 'text-zinc-600 bg-zinc-900/30 border-zinc-800/50 hover:text-purple-400 hover:border-purple-500/30 opacity-100 md:opacity-0 md:group-hover:opacity-100'}`}
                             title={item.isFavorite ? "Fjern fra favoritter" : "Gem som favorit"}
                           >
                             <Star className={`w-3.5 h-3.5 ${item.isFavorite ? 'fill-purple-500' : ''}`} />
@@ -245,23 +308,23 @@ const GroceryList: React.FC<GroceryListProps> = ({ items, onToggle, onDelete, on
                             </span>
                           </button>
 
-                          <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0">
+                          <div className="flex flex-wrap sm:flex-nowrap items-center gap-1.5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300 translate-x-0 md:translate-x-2 md:group-hover:translate-x-0">
                             <div className="flex items-center bg-zinc-900/80 border border-zinc-800 rounded-xl p-1 shadow-2xl">
-                              <button onClick={() => handleQuantity(item, -1)} className="p-1.5 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors">
-                                <Minus className="w-3.5 h-3.5" />
+                              <button onClick={() => handleQuantity(item, -1)} className="p-2 sm:p-1.5 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors">
+                                <Minus className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
                               </button>
                               <div className="w-px h-3 bg-zinc-800 mx-0.5" />
-                              <button onClick={() => handleQuantity(item, 1)} className="p-1.5 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors">
-                                <Plus className="w-3.5 h-3.5" />
+                              <button onClick={() => handleQuantity(item, 1)} className="p-2 sm:p-1.5 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors">
+                                <Plus className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
                               </button>
                             </div>
 
                             <div className="flex items-center bg-zinc-900/80 border border-zinc-800 rounded-xl p-1 shadow-2xl">
-                              <button onClick={() => startEditing(item)} className="p-1.5 text-zinc-500 hover:text-purple-400 hover:bg-purple-400/10 rounded-lg transition-all">
-                                <Pencil className="w-3.5 h-3.5" />
+                              <button onClick={() => startEditing(item)} className="p-2 sm:p-1.5 text-zinc-500 hover:text-purple-400 hover:bg-purple-400/10 rounded-lg transition-all">
+                                <Pencil className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
                               </button>
-                              <button onClick={() => onDelete(item.id)} className="p-1.5 text-zinc-500 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-all">
-                                <Trash2 className="w-3.5 h-3.5" />
+                              <button onClick={() => onDelete(item.id)} className="p-2 sm:p-1.5 text-zinc-500 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-all">
+                                <Trash2 className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
                               </button>
                             </div>
                           </div>
@@ -269,13 +332,13 @@ const GroceryList: React.FC<GroceryListProps> = ({ items, onToggle, onDelete, on
                       )}
 
                       {!isEditing && item.completed && onMoveToPantry && (
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 mt-3 sm:mt-0">
                           <button 
                             onClick={() => onMoveToPantry(item)}
                             className="flex items-center gap-2 px-3 py-2 rounded-xl border border-blue-500/20 bg-blue-500/10 text-blue-400 hover:bg-blue-500 hover:text-white transition-all duration-300"
                             title="Flyt til spisekammer"
                           >
-                            <PackagePlus className="w-3.5 h-3.5" />
+                            <PackagePlus className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
                             <span className="text-[9px] font-black uppercase tracking-widest hidden md:inline">
                               Til spisekammer
                             </span>
@@ -297,37 +360,6 @@ const GroceryList: React.FC<GroceryListProps> = ({ items, onToggle, onDelete, on
                         </div>
                       )}
                     </div>
-
-                    {/* Inline Expandable Price Sources Section */}
-                    {isSourcesOpen && item.priceSources && (
-                      <div className="mx-5 mb-5 p-4 bg-zinc-900/60 rounded-2xl border border-white/5 animate-in slide-in-from-top-2 duration-300">
-                        <div className="flex items-center justify-between mb-3 px-1">
-                          <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Markedspriser (AI)</p>
-                          <span className="text-[10px] text-zinc-600 font-bold">Danmark</span>
-                        </div>
-                        <div className="space-y-2.5">
-                          {item.priceSources.map((source, idx) => (
-                            <div key={idx} className="flex items-center justify-between">
-                              <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/5 flex items-center justify-center">
-                                  <Store className="w-3.5 h-3.5 text-purple-400" />
-                                </div>
-                                <span className="text-xs font-bold text-zinc-200">{source.store}</span>
-                              </div>
-                              <span className="text-xs font-black text-zinc-100 tabular-nums">
-                                {formatCurrency(source.price)}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                        <div className="mt-4 pt-3 border-t border-white/5 flex items-center gap-2">
-                          <Info className="w-3 h-3 text-zinc-600" />
-                          <p className="text-[9px] text-zinc-600 font-medium italic leading-none">
-                            Priserne er indhentet via AI og kan variere lokalt.
-                          </p>
-                        </div>
-                      </div>
-                    )}
                   </div>
                 );
               })}

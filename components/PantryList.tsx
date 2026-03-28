@@ -146,9 +146,31 @@ const PantryList: React.FC<PantryListProps> = ({ items, onDelete, onUpdate, auto
                     key={item.id}
                     className={`group relative flex flex-col bg-[#121214]/60 hover:bg-[#18181b]/80 rounded-[1.5rem] border transition-all duration-300 ${expired ? 'border-red-500/30 bg-red-500/5' : expiring ? 'border-amber-500/30 bg-amber-500/5' : 'border-zinc-800/40'} ${isEditing ? 'ring-2 ring-purple-500/50 bg-[#18181b] border-purple-500/20 shadow-[0_0_40px_-10px_rgba(168,85,247,0.15)]' : 'hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)] hover:-translate-y-0.5'}`}
                   >
-                    <div className="flex items-center gap-5 p-5">
-                      <div className="w-16 h-16 shrink-0 rounded-2xl bg-zinc-900/80 flex items-center justify-center overflow-hidden border border-zinc-800/50 shadow-inner group-hover:scale-105 transition-transform duration-500">
-                        <span className="text-3xl filter drop-shadow-lg">{item.emoji}</span>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5 p-4 sm:p-5">
+                      <div className="flex items-center gap-4">
+                        <div className="w-14 h-14 sm:w-16 sm:h-16 shrink-0 rounded-2xl bg-zinc-900/80 flex items-center justify-center overflow-hidden border border-zinc-800/50 shadow-inner group-hover:scale-105 transition-transform duration-500">
+                          {item.imageUrl ? (
+                            <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <span className="text-2xl sm:text-3xl filter drop-shadow-lg">{item.emoji}</span>
+                          )}
+                        </div>
+                        
+                        <div className="flex-1 min-w-0 sm:hidden">
+                          {/* Mobile title */}
+                          {!isEditing && (
+                            <div className="flex items-center gap-2 mb-1">
+                              <h4 className="text-lg font-bold text-zinc-100 tracking-tight leading-snug truncate">
+                                {item.name}
+                              </h4>
+                              {item.brand && (
+                                <span className="shrink-0 px-2 py-0.5 rounded-md bg-zinc-800/50 border border-zinc-700/30 text-[9px] font-black text-zinc-500 uppercase tracking-widest">
+                                  {item.brand}
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </div>
                       </div>
                       
                       <div className="flex-1 min-w-0">
@@ -161,7 +183,7 @@ const PantryList: React.FC<PantryListProps> = ({ items, onDelete, onUpdate, auto
                               className="w-full bg-zinc-950/50 border border-zinc-800 rounded-xl px-4 py-2.5 text-sm text-white focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 outline-none transition-all"
                               placeholder="Varenavn"
                             />
-                            <div className="flex gap-2">
+                            <div className="flex flex-col sm:flex-row gap-2">
                               <div className="flex items-center bg-zinc-950/50 border border-zinc-800 rounded-xl px-3 py-2">
                                 <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mr-2">Antal</span>
                                 <input
@@ -172,21 +194,22 @@ const PantryList: React.FC<PantryListProps> = ({ items, onDelete, onUpdate, auto
                                   className="w-12 bg-transparent text-xs text-white outline-none text-center"
                                 />
                               </div>
-                              <div className="flex items-center bg-zinc-950/50 border border-zinc-800 rounded-xl px-3 py-2 flex-1">
-                                <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mr-2">% Tilbage</span>
-                                <input
-                                  type="range"
-                                  min="0"
-                                  max="100"
-                                  step="10"
-                                  value={editPercentage}
-                                  onChange={(e) => setEditPercentage(parseInt(e.target.value))}
-                                  className="flex-1 accent-purple-500"
-                                />
-                                <span className="text-xs text-white ml-2 w-8 text-right">{editPercentage}%</span>
+                              <div className="flex flex-col bg-zinc-950/50 border border-zinc-800 rounded-xl px-3 py-2 flex-1">
+                                <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-2">Beholdning</span>
+                                <div className="flex justify-between gap-1">
+                                  {[0, 25, 50, 75, 100].map((p) => (
+                                    <button
+                                      key={p}
+                                      onClick={() => setEditPercentage(p)}
+                                      className={`flex-1 py-1.5 rounded-lg text-[10px] font-black transition-all ${editPercentage === p ? 'bg-purple-500 text-white shadow-lg shadow-purple-500/20' : 'bg-zinc-900 text-zinc-500 hover:text-zinc-300'}`}
+                                    >
+                                      {p}%
+                                    </button>
+                                  ))}
+                                </div>
                               </div>
                             </div>
-                            <div className="flex gap-2">
+                            <div className="flex flex-col sm:flex-row gap-2">
                               <select
                                 value={editCategory}
                                 onChange={(e) => setEditCategory(e.target.value)}
@@ -208,36 +231,45 @@ const PantryList: React.FC<PantryListProps> = ({ items, onDelete, onUpdate, auto
                           </div>
                         ) : (
                           <div className="flex flex-col">
-                            <h4 className="text-lg font-bold text-zinc-100 tracking-tight leading-snug truncate mb-1">
-                              {item.name}
-                            </h4>
+                            <div className="hidden sm:flex items-center gap-2 mb-1">
+                              <h4 className="text-lg font-bold text-zinc-100 tracking-tight leading-snug truncate">
+                                {item.name}
+                              </h4>
+                              {item.brand && (
+                                <span className="shrink-0 px-2 py-0.5 rounded-md bg-zinc-800/50 border border-zinc-700/30 text-[9px] font-black text-zinc-500 uppercase tracking-widest">
+                                  {item.brand}
+                                </span>
+                              )}
+                            </div>
                             
-                            <div className="flex items-center gap-3">
+                            <div className="flex flex-wrap items-center gap-2 mt-1">
                               <div className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-purple-500/5 border border-purple-500/10">
                                 <span className="text-[10px] font-black text-purple-400 uppercase tracking-tighter">{item.quantity} stk</span>
                               </div>
                               
                               {item.percentageLeft !== undefined && (
                                 <>
-                                  <div className="h-3 w-px bg-zinc-800/50" />
-                                  <div className="flex items-center gap-1.5 px-2 py-1 rounded-md border bg-zinc-900/50 border-zinc-800 text-zinc-400">
+                                  <div className="hidden sm:block h-3 w-px bg-zinc-800/50" />
+                                  <div className={`flex items-center gap-1.5 px-2 py-1 rounded-md border bg-zinc-900/50 ${item.percentageLeft <= 25 ? 'border-red-500/50 text-red-400 animate-pulse' : 'border-zinc-800 text-zinc-400'}`}>
                                     <div className="w-16 h-1.5 bg-zinc-800 rounded-full overflow-hidden">
                                       <div 
                                         className="h-full rounded-full transition-all duration-500"
                                         style={{ 
                                           width: `${item.percentageLeft}%`,
-                                          backgroundColor: item.percentageLeft > 50 ? '#22c55e' : item.percentageLeft > 20 ? '#eab308' : '#ef4444'
+                                          backgroundColor: item.percentageLeft > 50 ? '#22c55e' : item.percentageLeft > 25 ? '#eab308' : '#ef4444'
                                         }}
                                       />
                                     </div>
-                                    <span className="text-[9px] font-bold uppercase tracking-widest">{item.percentageLeft}%</span>
+                                    <span className="text-[9px] font-bold uppercase tracking-widest">
+                                      {item.percentageLeft <= 25 ? 'Lav beholdning' : `${item.percentageLeft}%`}
+                                    </span>
                                   </div>
                                 </>
                               )}
 
                               {item.expirationDate && (
                                 <>
-                                  <div className="h-3 w-px bg-zinc-800/50" />
+                                  <div className="hidden sm:block h-3 w-px bg-zinc-800/50" />
                                   <div className={`flex items-center gap-1.5 px-2 py-1 rounded-md border ${expired ? 'bg-red-500/10 border-red-500/20 text-red-400' : expiring ? 'bg-amber-500/10 border-amber-500/20 text-amber-400' : 'bg-zinc-900/50 border-zinc-800 text-zinc-400'}`}>
                                     {expired || expiring ? <AlertCircle className="w-3 h-3" /> : <Calendar className="w-3 h-3" />}
                                     <span className="text-[9px] font-bold uppercase tracking-widest">
@@ -252,27 +284,27 @@ const PantryList: React.FC<PantryListProps> = ({ items, onDelete, onUpdate, auto
                       </div>
 
                       {!isEditing && (
-                        <div className="flex items-center gap-3">
-                          <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0">
+                        <div className="flex items-center gap-3 mt-3 sm:mt-0">
+                          <div className="flex flex-wrap sm:flex-nowrap items-center gap-1.5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300 translate-x-0 md:translate-x-2 md:group-hover:translate-x-0">
                             <div className="flex items-center bg-zinc-900/80 border border-zinc-800 rounded-xl p-1 shadow-2xl">
-                              <button onClick={() => handleQuantity(item, -1)} className="p-1.5 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors">
-                                <Minus className="w-3.5 h-3.5" />
+                              <button onClick={() => handleQuantity(item, -1)} className="p-2 sm:p-1.5 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors">
+                                <Minus className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
                               </button>
                               <div className="w-px h-3 bg-zinc-800 mx-0.5" />
-                              <button onClick={() => handleQuantity(item, 1)} className="p-1.5 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors">
-                                <Plus className="w-3.5 h-3.5" />
+                              <button onClick={() => handleQuantity(item, 1)} className="p-2 sm:p-1.5 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors">
+                                <Plus className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
                               </button>
                             </div>
 
                             <div className="flex items-center bg-zinc-900/80 border border-zinc-800 rounded-xl p-1 shadow-2xl">
-                              <button onClick={() => onUpdate(item.id, { isFavorite: !item.isFavorite })} className={`p-1.5 rounded-lg transition-all ${item.isFavorite ? 'text-yellow-400 bg-yellow-400/10' : 'text-zinc-500 hover:text-yellow-400 hover:bg-yellow-400/10'}`}>
-                                <Star className={`w-3.5 h-3.5 ${item.isFavorite ? 'fill-yellow-400' : ''}`} />
+                              <button onClick={() => onUpdate(item.id, { isFavorite: !item.isFavorite })} className={`p-2 sm:p-1.5 rounded-lg transition-all ${item.isFavorite ? 'text-yellow-400 bg-yellow-400/10' : 'text-zinc-500 hover:text-yellow-400 hover:bg-yellow-400/10'}`}>
+                                <Star className={`w-4 h-4 sm:w-3.5 sm:h-3.5 ${item.isFavorite ? 'fill-yellow-400' : ''}`} />
                               </button>
-                              <button onClick={() => startEditing(item)} className="p-1.5 text-zinc-500 hover:text-purple-400 hover:bg-purple-400/10 rounded-lg transition-all">
-                                <Pencil className="w-3.5 h-3.5" />
+                              <button onClick={() => startEditing(item)} className="p-2 sm:p-1.5 text-zinc-500 hover:text-purple-400 hover:bg-purple-400/10 rounded-lg transition-all">
+                                <Pencil className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
                               </button>
-                              <button onClick={() => onDelete(item.id)} className="p-1.5 text-zinc-500 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-all">
-                                <Trash2 className="w-3.5 h-3.5" />
+                              <button onClick={() => onDelete(item.id)} className="p-2 sm:p-1.5 text-zinc-500 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-all">
+                                <Trash2 className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
                               </button>
                             </div>
                           </div>

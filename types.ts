@@ -43,6 +43,8 @@ export interface PantryItem {
   expirationDate?: number;
   percentageLeft?: number;
   isFavorite?: boolean;
+  brand?: string;
+  imageUrl?: string;
 }
 
 export interface ShoppingList {
@@ -71,4 +73,13 @@ export enum GroceryCategory {
   BEVERAGES = 'Drikkevarer',
   HOUSEHOLD = 'Husholdning',
   OTHER = 'Andet'
+}
+
+declare global {
+  interface Window {
+    aistudio?: {
+      hasSelectedApiKey: () => Promise<boolean>;
+      openSelectKey: () => Promise<void>;
+    };
+  }
 }
