@@ -18,7 +18,9 @@ import {
   RefreshCw,
   Users,
   Package,
-  Key
+  Key,
+  Sparkles,
+  Lightbulb
 } from 'lucide-react';
 import { User } from 'firebase/auth';
 import SearchInput from './components/SearchInput';
@@ -30,7 +32,7 @@ import ShoppingInsights from './components/ShoppingInsights';
 import NearbyStores from './components/NearbyStores';
 import AdminDashboard from './components/AdminDashboard';
 import { GroceryItem, ShoppingList, FavoriteItem, PantryItem } from './types';
-import { categorizeAndPriceItem, batchCategorizeItems, searchItemContext } from './services/geminiService';
+import { categorizeAndPriceItem, batchCategorizeItems, searchItemContext, getShoppingInsights } from './services/geminiService';
 import { lookupOpenFoodFacts } from './services/upcService';
 import { 
   firebaseEnabled,
@@ -79,6 +81,9 @@ const App: React.FC = () => {
   const [sharingListId, setSharingListId] = useState<string | null>(null);
   const [shareEmail, setShareEmail] = useState('');
   const [notification, setNotification] = useState<{ message: string; type: 'info' | 'success' | 'warning' } | null>(null);
+  const [insights, setInsights] = useState<{ hints: string[], suggestions: string[], estimatedTotal?: number } | null>(null);
+  const [insightsLoading, setInsightsLoading] = useState(false);
+  const [showAIBanner, setShowAIBanner] = useState(false);
 
   const skipAI = (id: string, query: string) => {
     setProcessingItems(prev => prev.filter(p => p.id !== id));
@@ -89,11 +94,11 @@ const App: React.FC = () => {
       category: "Andet",
       emoji: "🛒",
       color: "#71717a",
+      quantity: 1,
       completed: false,
-      createdAt: Date.now()
+      addedAt: Date.now()
     };
 
-    const activeList = lists.find(l => l.id === activeListId);
     if (activeListId) {
       if (firebaseEnabled && currentUser && db) {
         const listRef = doc(db, 'lists', activeListId);
@@ -106,6 +111,38 @@ const App: React.FC = () => {
       }
     }
   };
+
+  // Fetch AI Insights
+  useEffect(() => {
+    const activeList = lists.find(l => l.id === activeListId);
+    if (!activeList || activeList.items.length === 0) {
+      setInsights(null);
+      return;
+    }
+
+    const fetchInsights = async () => {
+      setInsightsLoading(true);
+      try {
+        const itemNames = activeList.items.map(i => i.name);
+        const otherListsContext = lists
+          .filter(l => l.id !== activeList.id)
+          .map(l => `${l.name}: ${l.items.map(i => i.name).join(', ')}`)
+          .join(' | ');
+
+        const result = await getShoppingInsights(itemNames, otherListsContext, "Danmark");
+        if (result) {
+          setInsights(result);
+        }
+      } catch (error) {
+        console.error("Failed to load insights", error);
+      } finally {
+        setInsightsLoading(false);
+      }
+    };
+
+    const timeoutId = setTimeout(fetchInsights, 2000);
+    return () => clearTimeout(timeoutId);
+  }, [activeListId, lists]);
 
   // Håndter indlæsning af data og migrering
   useEffect(() => {
@@ -1087,6 +1124,44 @@ const App: React.FC = () => {
       </nav>
 
       <main className="flex-1 max-w-4xl mx-auto w-full px-4 md:px-6 py-6 md:py-12 pb-24 md:pb-12">
+        {/* AI Assistant Banner */}
+        {insights && insights.hints.length > 0 && (
+          <div className="mb-8 relative group">
+            <button 
+              onClick={() => setShowAIBanner(!showAIBanner)}
+              className="flex items-center gap-3 px-4 py-3 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/20 rounded-2xl transition-all w-full text-left"
+            >
+              <div className="w-8 h-8 bg-purple-500/20 rounded-xl flex items-center justify-center">
+                <Sparkles className="w-4 h-4 text-purple-400" />
+              </div>
+              <div className="flex-1">
+                <p className="text-[10px] font-black text-purple-400 uppercase tracking-widest">AI Assistent</p>
+                <p className="text-xs text-zinc-300 font-medium truncate">Jeg har fundet {insights.hints.length} tips til din indkøbsliste!</p>
+              </div>
+              <ChevronDown className={`w-4 h-4 text-zinc-500 transition-transform duration-300 ${showAIBanner ? 'rotate-180' : ''}`} />
+            </button>
+
+            {showAIBanner && (
+              <div className="absolute top-full left-0 right-0 mt-2 z-40 animate-in fade-in slide-in-from-top-2 duration-300">
+                <div className="glass border-white/5 rounded-2xl p-4 shadow-2xl space-y-3">
+                  <div className="flex items-center gap-2 pb-2 border-b border-white/5">
+                    <Lightbulb className="w-4 h-4 text-amber-400" />
+                    <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Smarte Tips</span>
+                  </div>
+                  <div className="space-y-2">
+                    {insights.hints.map((hint, idx) => (
+                      <div key={idx} className="flex items-start gap-3 p-2 hover:bg-white/5 rounded-lg transition-colors">
+                        <div className="w-1.5 h-1.5 rounded-full bg-purple-500 mt-1.5 shrink-0" />
+                        <p className="text-xs text-zinc-300 leading-relaxed">{hint}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="mb-8 md:mb-12 space-y-6 md:space-y-8">
           <div className="space-y-2 md:space-y-4">
             <p className="text-[10px] font-black text-purple-500 uppercase tracking-[0.4em]">
@@ -1171,8 +1246,9 @@ const App: React.FC = () => {
             {/* AI Insights and Nearby Stores */}
             <ShoppingInsights 
               activeList={activeList} 
-              allLists={lists} 
-              onAddSuggestion={handleAddItem} 
+              onAddSuggestion={handleAddItem}
+              insights={insights}
+              loading={insightsLoading}
             />
             <NearbyStores />
           </>

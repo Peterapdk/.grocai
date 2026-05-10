@@ -15,8 +15,8 @@ import {
   Loader2,
   Store,
   Star,
-  Info,
-  PackagePlus
+  PackagePlus,
+  ChevronDown
 } from 'lucide-react';
 
 interface GroceryListProps {
@@ -239,43 +239,13 @@ const GroceryList: React.FC<GroceryListProps> = ({ items, onToggle, onDelete, on
                                     <div className="relative">
                                       <button 
                                         onClick={() => setShowSourcesId(isSourcesOpen ? null : item.id)}
-                                        className={`p-1 rounded-full transition-all ${isSourcesOpen ? 'bg-purple-500 text-white' : 'text-zinc-500 hover:text-purple-400 hover:bg-purple-500/10'}`}
+                                        className={`flex items-center gap-1.5 px-2 py-1 rounded-lg transition-all border ${isSourcesOpen ? 'bg-purple-500 border-purple-400 text-white shadow-lg shadow-purple-500/20' : 'bg-white/5 border-white/5 text-zinc-500 hover:text-purple-400 hover:bg-purple-500/10 hover:border-purple-500/20'}`}
                                         title="Se priskilder"
                                       >
-                                        <Info className="w-3 h-3" />
+                                        <Store className="w-3 h-3" />
+                                        <span className="text-[9px] font-black uppercase tracking-widest">Priskilder</span>
+                                        <ChevronDown className={`w-2.5 h-2.5 transition-transform duration-300 ${isSourcesOpen ? 'rotate-180' : ''}`} />
                                       </button>
-
-                                      <AnimatePresence>
-                                        {isSourcesOpen && (
-                                          <motion.div 
-                                            initial={{ opacity: 0, scale: 0.9, y: 10 }}
-                                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                                            exit={{ opacity: 0, scale: 0.9, y: 10 }}
-                                            className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-48 glass p-4 rounded-2xl border border-white/10 shadow-2xl z-[100]"
-                                          >
-                                            <div className="flex items-center justify-between mb-3">
-                                              <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Priskilder</p>
-                                              <Store className="w-2.5 h-2.5 text-purple-400" />
-                                            </div>
-                                            <div className="space-y-2">
-                                              {item.priceSources.map((source, idx) => (
-                                                <div key={idx} className="flex items-center justify-between">
-                                                  <span className="text-[10px] font-bold text-zinc-300">{source.store}</span>
-                                                  <span className="text-[10px] font-black text-zinc-100 tabular-nums">
-                                                    {formatCurrency(source.price)}
-                                                  </span>
-                                                </div>
-                                              ))}
-                                            </div>
-                                            <div className="mt-3 pt-2 border-t border-white/5">
-                                              <p className="text-[8px] text-zinc-500 italic leading-tight">
-                                                Indhentet via AI. Priser kan variere.
-                                              </p>
-                                            </div>
-                                            <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-[#18181b] border-r border-b border-white/10 rotate-45" />
-                                          </motion.div>
-                                        )}
-                                      </AnimatePresence>
                                     </div>
                                   )}
                                 </div>
@@ -360,6 +330,43 @@ const GroceryList: React.FC<GroceryListProps> = ({ items, onToggle, onDelete, on
                         </div>
                       )}
                     </div>
+
+                    {/* Price Sources Expandable Section */}
+                    <AnimatePresence>
+                      {isSourcesOpen && item.priceSources && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="px-5 pb-5 pt-0">
+                            <div className="p-4 rounded-2xl bg-white/5 border border-white/5 space-y-3">
+                              <div className="flex items-center justify-between border-b border-white/5 pb-2">
+                                <div className="flex items-center gap-2">
+                                  <Store className="w-3.5 h-3.5 text-purple-400" />
+                                  <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Priskilder</span>
+                                </div>
+                                <span className="text-[9px] text-zinc-500 italic">Priser indhentet via AI</span>
+                              </div>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                {item.priceSources.map((source, idx) => (
+                                  <div key={idx} className="flex items-center justify-between p-2 rounded-xl bg-white/5 border border-white/5">
+                                    <span className="text-xs font-bold text-zinc-300">{source.store}</span>
+                                    <span className="text-xs font-black text-white tabular-nums">
+                                      {formatCurrency(source.price)}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                              <p className="text-[9px] text-zinc-600 leading-tight">
+                                Bemærk: Disse priser er estimater baseret på AI-søgninger og kan variere fra de faktiske priser i din lokale butik.
+                              </p>
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
                 );
               })}

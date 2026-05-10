@@ -1,6 +1,6 @@
 {
   "name": ".GrocAI",
-  "description": "An intelligent grocery management app with AI-powered categorization and barcode lookup, featuring a sleek Vercel-inspired dark aesthetic.",
+  "description": "GrocAI is an intelligent shopping and pantry management application. It leverages Gemini AI for automatic categorization, price estimation, and smart shopping tips. Features include advanced barcode scanning via Google Search, cloud synchronization with Firebase, and real-time list sharing, all powered by a sleek Vercel-inspired dark interface.",
   "requestFramePermissions": [
     "geolocation"
   ]

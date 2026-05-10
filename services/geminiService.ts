@@ -1,5 +1,5 @@
 
-import { GoogleGenAI, Type, ThinkingLevel } from "@google/genai";
+import { GoogleGenAI, Type } from "@google/genai";
 import { INITIAL_PROMPT, CATEGORY_STYLES } from "../constants";
 import { withTimeout } from "../lib/timeout";
 

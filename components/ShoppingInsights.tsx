@@ -1,64 +1,14 @@
-import { useState, useEffect } from 'react';
 import { Lightbulb, Loader2, Sparkles, TrendingDown, PlusCircle } from 'lucide-react';
-import { getShoppingInsights } from '../services/geminiService';
 import { ShoppingList } from '../types';
 
 interface ShoppingInsightsProps {
   activeList: ShoppingList | undefined;
-  allLists: ShoppingList[];
   onAddSuggestion: (item: string) => void;
+  insights: { hints: string[], suggestions: string[], estimatedTotal?: number } | null;
+  loading: boolean;
 }
 
-export default function ShoppingInsights({ activeList, allLists, onAddSuggestion }: ShoppingInsightsProps) {
-  const [insights, setInsights] = useState<{ hints: string[], suggestions: string[], estimatedTotal?: number } | null>(null);
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (!activeList || activeList.items.length === 0) {
-      setInsights(null);
-      return;
-    }
-
-    const fetchInsights = async () => {
-      setLoading(true);
-      try {
-        const itemNames = activeList.items.map(i => i.name);
-        const otherListsContext = allLists
-          .filter(l => l.id !== activeList.id)
-          .map(l => `${l.name}: ${l.items.map(i => i.name).join(', ')}`)
-          .join(' | ');
-
-        // Optionally get location
-        let locationStr = "Danmark";
-        try {
-          if (navigator.geolocation) {
-             // We won't block on location, just try to get it if already permitted or quick
-             // Actually, to avoid prompt spam, we might just pass "Danmark" unless we have it.
-             // For simplicity, we'll just use the default.
-          }
-        } catch (e) {}
-
-        const result = await getShoppingInsights(itemNames, otherListsContext, locationStr);
-        if (result) {
-          setInsights(result);
-        }
-      } catch (error: any) {
-        console.error("Failed to load insights", error);
-        if (error?.message?.includes('Requested entity was not found') || error?.error?.message?.includes('Requested entity was not found')) {
-          // We can't setHasApiKey here directly, but we can trigger a re-check if App.tsx listens for it
-          // or just rely on the next user action to trigger it.
-          // For now, we'll just log it clearly.
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    // Debounce the fetch so it doesn't run on every single keystroke/item add immediately
-    const timeoutId = setTimeout(fetchInsights, 2000);
-    return () => clearTimeout(timeoutId);
-  }, [activeList?.items, allLists]);
-
+export default function ShoppingInsights({ activeList, onAddSuggestion, insights, loading }: ShoppingInsightsProps) {
   if (!activeList || activeList.items.length === 0) return null;
 
   return (
